@@ -72,12 +72,10 @@ def process_image(image_path, num_output=1):
     img = center_crop(img, target_size)
 
     patch_size = (128, 128)
-    image_pairs = []
-    # offsets = []
-    orig_points = []
-    #perturbed_points = []
-    imageA = []
-    while len(orig_points) < num_output:
+    patches = []
+    corners = []
+    images = []
+    while len(corners) < num_output:
         orig, perturbed = generate_points()
         a = crop(img, orig[0], patch_size)
         b = warp(img, orig, perturbed, target_size)
@@ -86,14 +84,11 @@ def process_image(image_path, num_output=1):
             d = np.stack((a, b), axis=-1)
         except ValueError:
             continue
-        image_pairs.append(d)
-        #offset = (perturbed - orig).reshape(-1)
-        #offsets.append(offset)
-        orig_points.append(orig)
-        #perturbed_points.append(perturbed)
-        imageA.append(img)
+        patches.append(d)
+        corners.append(orig)
+        images.append(img)
     print('done:', image_path)
-    return image_pairs, orig_points, imageA
+    return patches, corners, images
 
 
 class Worker(Thread):
@@ -115,11 +110,11 @@ class Worker(Thread):
                self.output_queue.put(output)
 
 
-def pack(outdir, patches, orig_points, images):
+def pack(outdir, patches, corners, images):
     name = str(uuid.uuid4())
     pack = os.path.join(outdir, name + '.npz')
     patches = np.stack(patches)
-    corners = np.stack(orig_points)
+    corners = np.stack(corners)
     images = np.stack(images)
     with open(pack, 'wb') as f:
         np.savez(f, patches=patches,
@@ -129,32 +124,28 @@ def pack(outdir, patches, orig_points, images):
 
 
 def bundle(queue, outdir):
-    image_pairs = []
-    #offsets = []
-    orig_points = []
-    #perturbed_points = []
-    imageA = []
+    patches = []
+    corners = []
+    images = []
     
     while True:
         try:
             d, o, i = queue.get(timeout=10)
         except Empty:
             break
-        image_pairs.extend(d)
-        #offsets.extend(o)
-        orig_points.extend(o)
-        #perturbed_points.extend(perturbed)
-        imageA.extend(i)
+        patches.extend(d)
+        corners.extend(o)
+        images.extend(i)
 
-        if len(image_pairs) >= 7680:
-            pack(outdir, image_pairs, orig_points, imageA)
-            image_pairs = []
-            orig_points = []
-            imageA= []
+        if len(patches) >= 7680:
+            pack(outdir, patches, corners, images)
+            patches = []
+            corners = []
+            images= []
         queue.task_done()
 
-    if image_pairs:
-        pack(outdir, image_pairs, orig_points, imageA)
+    if patches:
+        pack(outdir, patches, corners, images)
 
 
 def main():
