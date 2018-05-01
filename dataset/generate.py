@@ -63,17 +63,17 @@ def warp(img, orig, perturbed, target_size):
 
 def process_image(image_path, num_output=1):
     # Read as grayscale
-    imgA = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    if imgA.shape < (240, 320):
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    if img.shape < (240, 320):
         return
 
     target_size = (320, 240)
-    img = scale_down(imgA, target_size)
+    img = scale_down(img, target_size)
     img = center_crop(img, target_size)
 
     patch_size = (128, 128)
     image_pairs = []
-    #offsets = []
+    # offsets = []
     orig_points = []
     #perturbed_points = []
     imageA = []
@@ -115,16 +115,16 @@ class Worker(Thread):
                self.output_queue.put(output)
 
 
-def pack(outdir, image_pairs, orig_points, imgA):
+def pack(outdir, patches, orig_points, images):
     name = str(uuid.uuid4())
     pack = os.path.join(outdir, name + '.npz')
-    images=np.stack(image_pairs)
-    corners=np.stack(orig_points)
-    imageA=np.stack(imgA)
+    patches = np.stack(patches)
+    corners = np.stack(orig_points)
+    images = np.stack(images)
     with open(pack, 'wb') as f:
-        np.savez(f, images=images, 
-                 corners=corners, 
-                 imageA=imageA)
+        np.savez(f, patches=patches,
+                 corners=corners,
+                 images=images)
     print('bundled:', name)
 
 

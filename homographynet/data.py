@@ -15,40 +15,38 @@ TEST_PATH = '/home/darwin/Projects/HomographyNet/test-set'
 TEST_SAMPLES = 5 * _SAMPLES_PER_ARCHIVE
 
 
-def _shuffle_in_unison(a, b, c):
-    """A hack to shuffle both a, b, and c the same "random" way"""
-    prng_state = np.random.get_state()
-    np.random.shuffle(a)
-    np.random.set_state(prng_state)
-    np.random.shuffle(b)
-    np.random.set_state(prng_state)
-    np.random.shuffle(c)
-
-
-def loader(path, batch_size=64, normalize=True):
+def loader(path, batch_size=64, normalize=True, shuffle=True):
     """Generator to be used with model.fit_generator()"""
     while True:
         files = glob.glob(os.path.join(path, '*.npz'))
-        np.random.shuffle(files)
+        if shuffle:
+            np.random.shuffle(files)
         for npz in files:
             # Load pack into memory
             archive = np.load(npz)
-            images = archive['images']
+            patches = archive['patches']
             corners = archive['corners']
-            imageA = archive['imageA']
+            images = archive['images']
             
             del archive
-            _shuffle_in_unison(images, corners, imageA)
+
+            if shuffle:
+                p = np.random.permutation(len(corners))
+                patches = patches[p]
+                corners = corners[p]
+                images = images[p]
+
             # Split into mini batches
-            num_batches = int(len(corners) / batch_size)
-            images = np.array_split(images, num_batches)
+            num_batches = len(corners) // batch_size
+            patches = np.array_split(patches, num_batches)
             corners = np.array_split(corners, num_batches)
+            images = np.array_split(images, num_batches)
+
             while corners:
-                batch_images = images.pop()
+                batch_patches = patches.pop()
                 batch_corners = corners.pop()
-                batch_imageA = imageA.pop()
+                batch_images = images.pop()
                 if normalize:
+                    batch_patches = (batch_patches - 127.5) / 127.5
                     batch_images = (batch_images - 127.5) / 127.5
-                    batch_corners = batch_corners / 32.
-                    batch_imageA = (batch_imageA - 127.5) / 127.5
-                yield batch_images, batch_corners, batch_imageA
+                yield batch_patches, batch_corners, batch_images
