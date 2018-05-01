@@ -15,12 +15,14 @@ TEST_PATH = '/home/darwin/Projects/HomographyNet/test-set'
 TEST_SAMPLES = 5 * _SAMPLES_PER_ARCHIVE
 
 
-def _shuffle_in_unison(a, b):
-    """A hack to shuffle both a and b the same "random" way"""
+def _shuffle_in_unison(a, b, c):
+    """A hack to shuffle both a, b, and c the same "random" way"""
     prng_state = np.random.get_state()
     np.random.shuffle(a)
     np.random.set_state(prng_state)
     np.random.shuffle(b)
+    np.random.set_state(prng_state)
+    np.random.shuffle(c)
 
 
 def loader(path, batch_size=64, normalize=True):
@@ -32,17 +34,21 @@ def loader(path, batch_size=64, normalize=True):
             # Load pack into memory
             archive = np.load(npz)
             images = archive['images']
-            offsets = archive['offsets']
+            corners = archive['corners']
+            imageA = archive['imageA']
+            
             del archive
-            _shuffle_in_unison(images, offsets)
+            _shuffle_in_unison(images, corners, imageA)
             # Split into mini batches
-            num_batches = int(len(offsets) / batch_size)
+            num_batches = int(len(corners) / batch_size)
             images = np.array_split(images, num_batches)
-            offsets = np.array_split(offsets, num_batches)
-            while offsets:
+            corners = np.array_split(corners, num_batches)
+            while corners:
                 batch_images = images.pop()
-                batch_offsets = offsets.pop()
+                batch_corners = corners.pop()
+                batch_imageA = imageA.pop()
                 if normalize:
                     batch_images = (batch_images - 127.5) / 127.5
-                    batch_offsets = batch_offsets / 32.
-                yield batch_images, batch_offsets
+                    batch_corners = batch_corners / 32.
+                    batch_imageA = (batch_imageA - 127.5) / 127.5
+                yield batch_images, batch_corners, batch_imageA
