@@ -35,11 +35,9 @@ class ImageTransformer(Layer):
         super().__init__(**kwargs)
         self._img_w = img_w
         self._img_h = img_h
-        
-
 
     def call(self, inputs, **kwargs):
-        I, H_mat = inputs
+        I, H_mat, pts1_batch = inputs
 
         batch_size = tf.shape(I)[0]
         
@@ -63,23 +61,26 @@ class ImageTransformer(Layer):
         # Transform image 1 (large image) to image 2
         out_size = (self._img_h, self._img_w)
         warped_images, _ = transformer(I, H_mat, out_size)
-
-        return warped_images
-        # TODO
-
         # TODO: warp image 2 to image 1
 
-        # Extract the warped patch from warped_images by flatting the whole batch before using indices
-        # Note that input I  is  3 channels so we reduce to gray
-        # warped_gray_images = tf.reduce_mean(warped_images, 3)
-        # warped_images_flat = tf.reshape(warped_gray_images, [-1])
-        # patch_indices_flat = tf.reshape(self.patch_indices, [-1])
-        # pixel_indices = patch_indices_flat + self.batch_indices_tensor
-        # pred_I2_flat = tf.gather(warped_images_flat, pixel_indices)
-        #
-        # self.pred_I2 = tf.reshape(pred_I2_flat,
-        #                           [batch_size, patch_size, patch_size, 1])
-        # return self.pred_I2
+        # Crop patch
+        patch_size = 128
+
+        x = pts1_batch[:, 0, :]
+        y = pts1_batch[:, 1, :]
+        x2 = x + patch_size
+        y2 = y + patch_size
+
+        x = tf.divide(x, 320)
+        x2 = tf.divide(x2, 320)
+        y = tf.divide(y, 240)
+        y2 = tf.divide(y2, 240)
+
+        boxes = tf.reshape(tf.cast(tf.stack([y, x, y2, x2], axis=-1), 'float32'), [-1, 4])
+        a = tf.image.crop_and_resize(warped_images, boxes, tf.range(0, batch_size), tf.constant([128, 128], dtype='int32'))
+
+        return a
+
 
     def compute_output_shape(self, input_shape):
-        return (input_shape[0], 128, 128)
+        return (input_shape[0][0], 128, 128)
