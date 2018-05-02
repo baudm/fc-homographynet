@@ -6,8 +6,9 @@ from keras.applications import MobileNet
 from keras.utils.data_utils import get_file
 from keras.models import Sequential, Model
 from keras.layers import Conv2D, Dense, MaxPooling2D, InputLayer, Dropout, \
-    BatchNormalization, Flatten, Concatenate
+    BatchNormalization, Flatten, Concatenate, Input
 
+from .layers import Homography, ImageTransformer
 
 BASELINE_WEIGHTS_PATH = 'https://github.com/baudm/HomographyNet/raw/master/models/homographynet_weights_tf_dim_ordering_tf_kernels.h5'
 MOBILENET_WEIGHTS_PATH = 'https://github.com/baudm/HomographyNet/raw/master/models/mobile_homographynet_weights_tf_dim_ordering_tf_kernels.h5'
@@ -50,11 +51,20 @@ def create_mobilenet_model(use_weights=False):
     x = base_model.output
 
     # 4 Conv layers in parallel with 2 4x4 filters each
-    x = [Conv2D(2, 4, name='conv2d_{}'.format(i))(x) for i in range(1, 5)]
+    x = [Conv2D(2, 4, activation='tanh', name='conv2d_{}'.format(i))(x) for i in range(1, 5)]
     x = Concatenate(name='concatenate_1')(x)
-    x = Flatten(name='flatten_1')(x)
+    offsets = Flatten(name='flatten_1')(x) # TODO: x32 to bring back to correct scale
 
-    model = Model(base_model.input, x, name='mobile_homographynet')
+    full_image = Input((240, 320, 1), name='full_image')
+    corners = Input((8, 1), name='corners')
+
+
+    H = Homography()([corners, offsets])
+
+    warped = ImageTransformer(320, 240)([full_image, H, corners])
+
+
+    model = Model([base_model.input, corners, full_image], warped, name='mobile_homographynet')
 
     if use_weights:
         weights_name = os.path.basename(MOBILENET_WEIGHTS_PATH)

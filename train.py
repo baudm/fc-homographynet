@@ -12,7 +12,7 @@ from keras.optimizers import SGD
 from homographynet import data
 from homographynet.callbacks import LearningRateScheduler
 from homographynet.losses import mean_corner_error
-from homographynet.models import create_model
+from homographynet.models import create_mobilenet_model as create_model
 
 
 def main():
