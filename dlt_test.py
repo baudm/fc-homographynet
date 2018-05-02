@@ -6,7 +6,9 @@ from keras.layers import Input
 from keras.models import Model
 import keras.backend as K
 
-from homographynet.layers import Homography
+from homographynet.layers import Homography, ImageTransformer
+
+import cv2
 
 def main():
     p1 = Input((8, 1), name='p1')
@@ -30,10 +32,26 @@ def main():
 
     a = Homography().call([p1, p2])
 
+    img_tensor = Input((240, 320, 1), name='img_tensor')
+    H = Input((3, 3), name='H')
+
+    img = cv2.imread('dataset/000000084752.jpg', cv2.IMREAD_GRAYSCALE).reshape(1, 240, 320, 1)
+    print(img.shape)
+    b = ImageTransformer(320, 240).call([img_tensor, H])
+
+
     sess = K.get_session()
 
     r = sess.run(a, feed_dict={p1: data_p1.astype('float32'), p2: data_p2.astype('float32')})
     print(r)
+
+    r2 = sess.run(b, feed_dict={img_tensor: img, H: labels})
+    print(r2.shape)
+
+    import matplotlib.pyplot as plt
+
+    plt.imshow(r2[0].squeeze(), cmap='gray')
+    plt.show()
 
 
 if __name__ == '__main__':
