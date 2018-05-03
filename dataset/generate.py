@@ -74,6 +74,7 @@ def process_image(image_path, num_output=1):
     patch_size = (128, 128)
     patches = []
     corners = []
+    offsets = []
     images = []
     while len(corners) < num_output:
         orig, perturbed = generate_points()
@@ -87,8 +88,10 @@ def process_image(image_path, num_output=1):
         patches.append(d)
         corners.append(orig)
         images.append(img)
+        offset = (perturbed - orig).reshape(-1)
+        offsets.append(offset)
     print('done:', image_path)
-    return patches, corners, images
+    return patches, corners, images, offsets
 
 
 class Worker(Thread):
@@ -110,7 +113,7 @@ class Worker(Thread):
                self.output_queue.put(output)
 
 
-def pack(outdir, patches, corners, images):
+def pack(outdir, patches, corners, images, offsets):
     name = str(uuid.uuid4())
     pack = os.path.join(outdir, name + '.npz')
     patches = np.stack(patches)
@@ -119,6 +122,7 @@ def pack(outdir, patches, corners, images):
     with open(pack, 'wb') as f:
         np.savez(f, patches=patches,
                  corners=corners,
+                 offsets=offsets,
                  images=images)
     print('bundled:', name)
 
@@ -127,25 +131,27 @@ def bundle(queue, outdir):
     patches = []
     corners = []
     images = []
+    offsets = []
     
     while True:
         try:
-            d, o, i = queue.get(timeout=10)
+            d, o, i, off = queue.get(timeout=10)
         except Empty:
             break
         patches.extend(d)
         corners.extend(o)
         images.extend(i)
+        offsets.extend(off)
 
         if len(patches) >= 7680:
-            pack(outdir, patches, corners, images)
+            pack(outdir, patches, corners, images, offsets)
             patches = []
             corners = []
             images= []
         queue.task_done()
 
     if patches:
-        pack(outdir, patches, corners, images)
+        pack(outdir, patches, corners, images, offsets)
 
 
 def main():
