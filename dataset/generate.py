@@ -119,6 +119,7 @@ def pack(outdir, patches, corners, images, offsets):
     patches = np.stack(patches)
     corners = np.stack(corners)
     images = np.stack(images)
+    offsets = np.stack(offsets)
     with open(pack, 'wb') as f:
         np.savez(f, patches=patches,
                  corners=corners,
