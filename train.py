@@ -24,7 +24,7 @@ def main():
     if len(sys.argv) == 2:
         model = load_model(sys.argv[1], compile=False)
     else:
-        model = create_model()
+        model = create_model(True)
 
     # Configuration
     batch_size = 64
@@ -33,7 +33,7 @@ def main():
 
     sgd = SGD(lr=base_lr, momentum=0.9)
 
-    model.compile(optimizer=sgd, loss='mean_squared_error', metrics=[mean_corner_error])
+    model.compile(optimizer=sgd, loss='mean_squared_error')#, metrics=[mean_corner_error])
     model.summary()
 
     save_path = os.path.dirname(os.path.realpath(__file__))

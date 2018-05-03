@@ -8,11 +8,11 @@ import numpy as np
 
 _SAMPLES_PER_ARCHIVE = 7680
 
-TRAIN_PATH = '/home/darwin/Projects/HomographyNet/repack'
+TRAIN_PATH = '/mnt/data/datasets/homographynet/unsup/repack'
 TRAIN_SAMPLES = 65 * _SAMPLES_PER_ARCHIVE
 
-TEST_PATH = '/home/darwin/Projects/HomographyNet/test-set'
-TEST_SAMPLES = 5 * _SAMPLES_PER_ARCHIVE
+TEST_PATH = '/mnt/data/datasets/homographynet/unsup/test-set'
+TEST_SAMPLES = 7 * _SAMPLES_PER_ARCHIVE
 
 
 def loader(path, batch_size=64, normalize=True, shuffle=True):
@@ -49,4 +49,4 @@ def loader(path, batch_size=64, normalize=True, shuffle=True):
                 if normalize:
                     batch_patches = (batch_patches - 127.5) / 127.5
                     batch_images = (batch_images - 127.5) / 127.5
-                yield batch_patches, batch_corners, batch_images
+                yield [batch_patches, batch_corners.reshape(-1, 8, 1), batch_images.reshape(-1, 240,320, 1)], batch_patches[:, :, :, 1].reshape(-1, 128, 128, 1)

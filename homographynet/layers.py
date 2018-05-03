@@ -83,4 +83,4 @@ class ImageTransformer(Layer):
 
 
     def compute_output_shape(self, input_shape):
-        return (input_shape[0][0], 128, 128)
+        return (input_shape[0][0], 128, 128, 1)
