@@ -14,6 +14,8 @@ from homographynet.callbacks import LearningRateScheduler
 from homographynet.losses import mean_corner_error
 from homographynet.models import create_mobilenet_model as create_model
 
+from keras.losses import mean_squared_error
+from keras_contrib.losses import DSSIMObjective
 
 def main():
     if len(sys.argv) > 2:
@@ -24,7 +26,7 @@ def main():
     if len(sys.argv) == 2:
         model = load_model(sys.argv[1], compile=False)
     else:
-        model = create_model(True)
+        model = create_model(True)[1]
 
     # Configuration
     batch_size = 64
@@ -33,7 +35,12 @@ def main():
 
     sgd = SGD(lr=base_lr, momentum=0.9)
 
-    model.compile(optimizer=sgd, loss='mean_squared_error')#, metrics=[mean_corner_error])
+    def custom(y_true, y_pred):
+        dssim = DSSIMObjective()
+        return mean_squared_error(y_true, y_pred) + dssim(y_true, y_pred)
+
+
+    model.compile(optimizer='adagrad', loss=custom)#, metrics=[mean_corner_error])
     model.summary()
 
     save_path = os.path.dirname(os.path.realpath(__file__))

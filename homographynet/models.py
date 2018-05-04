@@ -53,6 +53,7 @@ def create_mobilenet_model(use_weights=False):
     # 4 Conv layers in parallel with 2 4x4 filters each
     x = [Conv2D(2, 4, name='conv2d_{}'.format(i))(x) for i in range(1, 5)]
     x = Concatenate(name='concatenate_1')(x)
+    #x = Flatten()(x)
     offsets = Reshape((8, 1))(x)
     offsets_scaled = Lambda(lambda x: x * 32)(offsets)
 
@@ -73,4 +74,4 @@ def create_mobilenet_model(use_weights=False):
                                 file_hash='e161aabc5a04ff715a6f5706855a339d598d1216a4a5f45b90b8dbf5f8bcedc3')
         orig_model.load_weights(weights_path)
 
-    return model
+    return orig_model, model

@@ -15,7 +15,7 @@ TEST_PATH = '/mnt/data/datasets/homographynet/unsup/test-set'
 TEST_SAMPLES = 7 * _SAMPLES_PER_ARCHIVE
 
 
-def loader(path, batch_size=64, normalize=True, shuffle=True):
+def loader(path, batch_size=64, normalize=True, shuffle=True, test=False):
     """Generator to be used with model.fit_generator()"""
     while True:
         files = glob.glob(os.path.join(path, '*.npz'))
@@ -27,7 +27,8 @@ def loader(path, batch_size=64, normalize=True, shuffle=True):
             patches = archive['patches']
             corners = archive['corners']
             images = archive['images']
-            
+            offsets = archive['offsets']
+
             del archive
 
             if shuffle:
@@ -35,18 +36,25 @@ def loader(path, batch_size=64, normalize=True, shuffle=True):
                 patches = patches[p]
                 corners = corners[p]
                 images = images[p]
+                offsets = offsets[p]
 
             # Split into mini batches
             num_batches = len(corners) // batch_size
             patches = np.array_split(patches, num_batches)
             corners = np.array_split(corners, num_batches)
             images = np.array_split(images, num_batches)
+            offsets = np.array_split(offsets, num_batches)
 
             while corners:
                 batch_patches = patches.pop()
                 batch_corners = corners.pop()
                 batch_images = images.pop()
+                batch_offsets = offsets.pop()
                 if normalize:
                     batch_patches = (batch_patches - 127.5) / 127.5
                     batch_images = (batch_images - 127.5) / 127.5
-                yield [batch_patches, batch_corners.reshape(-1, 8, 1), batch_images.reshape(-1, 240,320, 1)], batch_patches[:, :, :, 1].reshape(-1, 128, 128, 1)
+                inputs = [batch_patches, batch_corners.reshape(-1, 8, 1), batch_images.reshape(-1, 240,320, 1)]
+                outputs = [batch_patches[:, :, :, 1].reshape(-1, 128, 128, 1)]
+                if test:
+                    outputs.append(batch_offsets)
+                yield inputs, outputs

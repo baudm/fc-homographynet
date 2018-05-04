@@ -149,7 +149,7 @@ def bundle(queue, outdir):
             patches = []
             corners = []
             images= []
-            offsets=[]
+            offsets = []
         queue.task_done()
 
     if patches:
