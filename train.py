@@ -38,7 +38,7 @@ def main():
         return mean_squared_error(y_true, y_pred) + dssim(y_true, y_pred)
 
 
-    model.compile(optimizer='adagrad', loss=custom)#, metrics=[mean_corner_error])
+    model.compile(optimizer='adam', loss=custom)#, metrics=[mean_corner_error])
     model.summary()
 
     save_path = os.path.dirname(os.path.realpath(__file__))
@@ -61,7 +61,7 @@ def main():
 
     # Train
     model.fit_generator(loader, steps_per_epoch, epochs,
-                        callbacks=[lr_scheduler, checkpoint],
+                        callbacks=[checkpoint],
                         validation_data=val_loader, validation_steps=val_steps)
 
 

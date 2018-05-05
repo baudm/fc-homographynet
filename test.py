@@ -15,7 +15,7 @@ def main():
         print('Usage: {} [trained model.h5]'.format(name))
         exit(1)
 
-    test_model, train_model = create_models(use_weights=True)
+    train_model, test_model = create_models(use_weights=True)
 
     if len(sys.argv) == 2:
         train_model.load_weights(sys.argv[1])
