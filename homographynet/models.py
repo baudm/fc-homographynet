@@ -62,7 +62,7 @@ def create_mobilenet_model(use_weights=False):
 
     H = Homography()([corners, offsets_scaled])
 
-    warped = ImageTransformer(320, 240)([full_image, H, corners])
+    warped = ImageTransformer(320, 240, 128)([full_image, H, corners])
 
     orig_model = Model(base_model.input, offsets, name='mobile_homographynet_orig')
     model = Model([base_model.input, corners, full_image], warped, name='mobile_homographynet')

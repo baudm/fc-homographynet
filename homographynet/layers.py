@@ -31,10 +31,11 @@ class Homography(Layer):
 
 class ImageTransformer(Layer):
 
-    def __init__(self, img_w, img_h, **kwargs):
+    def __init__(self, img_w, img_h, patch_size, **kwargs):
         super().__init__(**kwargs)
         self._img_w = img_w
         self._img_h = img_h
+        self._patch_size = patch_size
 
     def call(self, inputs, **kwargs):
         I, H_mat, pts1_batch = inputs
@@ -64,23 +65,22 @@ class ImageTransformer(Layer):
         # TODO: warp image 2 to image 1
 
         # Crop patch
-        patch_size = 128
-
         x = pts1_batch[:, 0, :]
         y = pts1_batch[:, 1, :]
-        x2 = x + patch_size
-        y2 = y + patch_size
+        x2 = x + self._patch_size
+        y2 = y + self._patch_size
 
-        x = tf.divide(x, 320)
-        x2 = tf.divide(x2, 320)
-        y = tf.divide(y, 240)
-        y2 = tf.divide(y2, 240)
+        x = tf.divide(x, self._img_w)
+        x2 = tf.divide(x2, self._img_w)
+        y = tf.divide(y, self._img_h)
+        y2 = tf.divide(y2, self._img_h)
 
         boxes = tf.reshape(tf.cast(tf.stack([y, x, y2, x2], axis=-1), 'float32'), [-1, 4])
-        a = tf.image.crop_and_resize(warped_images, boxes, tf.range(0, batch_size), tf.constant([128, 128], dtype='int32'))
+        patch_size = tf.constant([self._patch_size, self._patch_size], dtype='int32')
+        cropped = tf.image.crop_and_resize(warped_images, boxes, tf.range(0, batch_size), patch_size)
 
-        return a
+        return cropped
 
 
     def compute_output_shape(self, input_shape):
-        return (input_shape[0][0], 128, 128, 1)
+        return (input_shape[0][0], self._patch_size, self._patch_size, 1)

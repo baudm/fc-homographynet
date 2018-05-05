@@ -39,7 +39,7 @@ def main():
 
     img = cv2.imread('dataset/000000084752.jpg', cv2.IMREAD_GRAYSCALE).reshape(1, 240, 320, 1)
     print(img.shape)
-    b = ImageTransformer(320, 240).call([img_tensor, H, corners])
+    b = ImageTransformer(320, 240, 128).call([img_tensor, H, corners])
 
 
     sess = K.get_session()
