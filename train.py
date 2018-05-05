@@ -6,13 +6,12 @@ import sys
 import math
 
 from keras.callbacks import ModelCheckpoint
-from keras.models import load_model
 from keras.optimizers import SGD
 
 from homographynet import data
 from homographynet.callbacks import LearningRateScheduler
 from homographynet.losses import mean_corner_error
-from homographynet.models import create_mobilenet_model as create_model
+from homographynet.models import create_models
 
 from keras.losses import mean_squared_error
 from keras_contrib.losses import DSSIMObjective
@@ -23,10 +22,9 @@ def main():
         print('Usage: {} [existing model.h5]'.format(name))
         exit(1)
 
+    model = create_models()[0]
     if len(sys.argv) == 2:
-        model = load_model(sys.argv[1], compile=False)
-    else:
-        model = create_model(True)[1]
+        model.load_weights(sys.argv[1])
 
     # Configuration
     batch_size = 64
