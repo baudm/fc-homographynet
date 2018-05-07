@@ -24,21 +24,22 @@ def main():
 
     batch_size = 64 * 2
 
-    loader = data.loader(data.TEST_PATH, 1, shuffle=True, test=True)
+    loader = data.loader(data.TEST_PATH, batch_size, shuffle=True, mode='test')
     steps = int(data.TEST_SAMPLES / batch_size)
 
     # Optimizer doesn't matter in this case, we just want to set the loss and metrics
-    train_model.compile('sgd', loss='mean_squared_error', metrics=[mean_corner_error])
-    #evaluation = model.evaluate_generator(loader, steps)
-    #print('Test loss:', evaluation)
-    (patches, corners, images), (targets, offsets) = next(loader)
+    test_model.compile('sgd', loss='mean_squared_error', metrics=[mean_corner_error])
+    evaluation = test_model.evaluate_generator(loader, steps)
+    print('Test loss:', evaluation)
+    loader = data.loader(data.TEST_PATH, 1, shuffle=True, mode='demo')
+    (patches, corners, images), offsets = next(loader)
 
     import matplotlib.pyplot as plt
 
     pred = train_model.predict_on_batch([patches, corners, images])
     p = test_model.predict_on_batch(patches)
     print('pred:', p*32.)
-    print('gt:', offsets)
+    print('gt:', offsets*32.)
 
     patches = (patches + 1.) / 2.
     patches = np.clip(patches, 0., 1.)

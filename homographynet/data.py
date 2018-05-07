@@ -15,8 +15,10 @@ TEST_PATH = '/mnt/data/datasets/homographynet/unsup/test-set'
 TEST_SAMPLES = 7 * _SAMPLES_PER_ARCHIVE
 
 
-def loader(path, batch_size=64, normalize=True, shuffle=True, test=False):
+def loader(path, batch_size=64, normalize=True, shuffle=True, mode='train'):
     """Generator to be used with model.fit_generator()"""
+    train = mode is 'train'
+    test = mode is 'test'
     while True:
         files = glob.glob(os.path.join(path, '*.npz'))
         if shuffle:
@@ -25,9 +27,9 @@ def loader(path, batch_size=64, normalize=True, shuffle=True, test=False):
             # Load pack into memory
             archive = np.load(npz)
             patches = archive['patches']
-            corners = archive['corners']
-            images = archive['images']
-            offsets = archive['offsets']
+            corners = archive['corners'].reshape(-1, 8, 1)
+            images = np.expand_dims(archive['images'], -1)
+            offsets = archive['offsets'].reshape(-1, 8, 1)
 
             del archive
 
@@ -53,8 +55,12 @@ def loader(path, batch_size=64, normalize=True, shuffle=True, test=False):
                 if normalize:
                     batch_patches = (batch_patches - 127.5) / 127.5
                     batch_images = (batch_images - 127.5) / 127.5
-                inputs = [batch_patches, batch_corners.reshape(-1, 8, 1), batch_images.reshape(-1, 240,320, 1)]
-                outputs = [batch_patches[:, :, :, 1].reshape(-1, 128, 128, 1)]
-                if test:
-                    outputs.append(batch_offsets)
-                yield inputs, outputs
+                    batch_offsets = batch_offsets / 32.
+
+                if train:
+                    targets = np.expand_dims(batch_patches[:, :, :, 1], -1)
+                    yield [batch_patches, batch_corners, batch_images], targets
+                elif test:
+                    yield batch_patches, batch_offsets
+                else: # demo
+                    yield [batch_patches, batch_corners, batch_images], batch_offsets
