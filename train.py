@@ -42,7 +42,7 @@ def main():
     model.summary()
 
     save_path = os.path.dirname(os.path.realpath(__file__))
-    checkpoint = ModelCheckpoint(os.path.join(save_path, 'model.{epoch:02d}.h5'))
+    checkpoint = ModelCheckpoint(os.path.join(save_path, 'model.{epoch:02d}.h5'), save_weights_only=True)
 
     # LR scaling as described in the paper
     lr_scheduler = LearningRateScheduler(base_lr, 0.1, 30000)
