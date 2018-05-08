@@ -38,8 +38,10 @@ def create_models(use_weights=False):
 
     if use_weights:
         weights_name = os.path.basename(WEIGHTS_PATH)
+        proj_root = os.path.split(os.path.dirname(__file__))[0]
         weights_path = get_file(weights_name, WEIGHTS_PATH,
                                 cache_subdir='weights',
+                                cache_dir=proj_root,
                                 file_hash='4d52b0810d4c940dd8176a1ec1fb9641782c98570280a0ede38badc6e62288d0')
         test_model.load_weights(weights_path)
 
