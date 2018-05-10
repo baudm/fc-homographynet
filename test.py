@@ -38,7 +38,7 @@ def main():
 
     pred = train_model.predict_on_batch([patches, corners, images])
     p = test_model.predict_on_batch(patches)
-    print('pred:', p*32.)
+    print('pred:', p)
     print('gt:', offsets*32.)
 
     patches = (patches + 1.) / 2.

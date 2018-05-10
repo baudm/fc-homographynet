@@ -22,14 +22,14 @@ def create_models(use_weights=False):
     # 4 Conv layers in parallel with 2 4x4 filters each
     x = [Conv2D(2, 4, name='conv2d_{}'.format(i))(x) for i in range(1, 5)]
     x = Concatenate(name='concatenate_1')(x)
-    offsets = Reshape((8, 1))(x)
-    offsets_scaled = Lambda(lambda x: x * 32)(offsets)
+    offsets_normalized = Reshape((8, 1))(x)
+    offsets = Lambda(lambda x: x * 32.)(offsets_normalized)
 
     # Additional inputs for unsupervised training
     full_image = Input((240, 320, 1), name='full_image')
     corners = Input((8, 1), name='corners')
 
-    H = Homography()([corners, offsets_scaled])
+    H = Homography()([corners, offsets])
 
     warped = ImageTransformer(320, 240, patch_size)([full_image, H, corners])
 

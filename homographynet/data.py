@@ -55,7 +55,6 @@ def loader(path, batch_size=64, normalize=True, shuffle=True, mode='train'):
                 if normalize:
                     batch_patches = (batch_patches - 127.5) / 127.5
                     batch_images = (batch_images - 127.5) / 127.5
-                    batch_offsets = batch_offsets / 32.
 
                 if train:
                     targets = np.expand_dims(batch_patches[:, :, :, 1], -1)
