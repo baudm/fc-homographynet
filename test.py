@@ -3,11 +3,13 @@
 import os.path
 import sys
 
+import numpy as np
+import matplotlib.pyplot as plt
+
 from homographynet import data
 from homographynet.models import create_models
 from homographynet.losses import mean_corner_error
 
-import numpy as np
 
 def main():
     if len(sys.argv) > 2:
@@ -33,8 +35,6 @@ def main():
     print('Test loss:', evaluation)
     loader = data.loader(data.TEST_PATH, 1, shuffle=True, mode='demo')
     (patches, corners, images), offsets = next(loader)
-
-    import matplotlib.pyplot as plt
 
     pred = train_model.predict_on_batch([patches, corners, images])
     p = test_model.predict_on_batch(patches)
