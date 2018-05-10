@@ -10,11 +10,9 @@ from keras.optimizers import SGD
 
 from homographynet import data
 from homographynet.callbacks import LearningRateScheduler
-from homographynet.losses import mean_corner_error
+from homographynet.losses import image_consistency
 from homographynet.models import create_models
 
-from keras.losses import mean_squared_error
-from keras_contrib.losses import DSSIMObjective
 
 def main():
     if len(sys.argv) > 2:
@@ -33,12 +31,7 @@ def main():
 
     sgd = SGD(lr=base_lr, momentum=0.9)
 
-    def custom(y_true, y_pred):
-        dssim = DSSIMObjective()
-        return mean_squared_error(y_true, y_pred) + dssim(y_true, y_pred)
-
-
-    model.compile(optimizer='adam', loss=custom)#, metrics=[mean_corner_error])
+    model.compile(optimizer='adam', loss=image_consistency)
     model.summary()
 
     save_path = os.path.dirname(os.path.realpath(__file__))
