@@ -9,7 +9,7 @@ from keras.layers import Conv2D, Concatenate, Input, Reshape, Lambda
 
 from .layers import Homography, ImageTransformer
 
-WEIGHTS_PATH = 'https://github.com/baudm/unsupervised-homographynet/raw/master/weights/hnet_weights_tf_dim_ordering_tf_kernels.h5'
+WEIGHTS_PATH = 'https://github.com/baudm/fc-homographynet/raw/master/weights/hnet_weights_tf_dim_ordering_tf_kernels.h5'
 
 
 def create_models(use_weights=False):
