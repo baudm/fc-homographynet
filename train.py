@@ -24,9 +24,9 @@ def main():
 
     # Configuration
     batch_size = 64
-    target_iterations = 90000 # at batch_size = 64
+    target_iterations = 2 * 90000 # at batch_size = 64
 
-    model.compile(optimizer='adam', loss=image_consistency)
+    model.compile(optimizer='nadam', loss=image_consistency)
     model.summary()
 
     save_path = os.path.dirname(os.path.realpath(__file__))

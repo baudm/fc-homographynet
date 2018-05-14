@@ -19,18 +19,17 @@ def create_models(use_weights=False):
     # The output shape just before the pooling and dense layers is: (4, 4, 1024)
     x = base_model.output
 
-    # 4 Conv layers in parallel with 2 4x4 filters each
-    x = [Conv2D(2, 4, name='conv2d_{}'.format(i))(x) for i in range(1, 5)]
-    x = Concatenate(name='concatenate_1')(x)
-    offsets_normalized = Reshape((8, 1))(x)
-    offsets = Lambda(lambda x: x * 32.)(offsets_normalized)
+    x = Conv2D(8, 4, name='conv2d_1')(x)
+    offsets = Reshape((8, 1))(x)
 
-    # Additional inputs for unsupervised training
+    # Additional inputs for self-supervised training
     full_image = Input((240, 320, 1), name='full_image')
     corners = Input((8, 1), name='corners')
 
+    # Compute the 3x3 homography matrix from the 4-pt formulation
     H = Homography()([corners, offsets])
 
+    # Warp the original image using the estimated homography
     warped = ImageTransformer(320, 240, patch_size)([full_image, H, corners])
 
     train_model = Model([base_model.input, corners, full_image], warped, name='homographynet')
@@ -42,7 +41,7 @@ def create_models(use_weights=False):
         weights_path = get_file(weights_name, WEIGHTS_PATH,
                                 cache_subdir='weights',
                                 cache_dir=proj_root,
-                                file_hash='4d52b0810d4c940dd8176a1ec1fb9641782c98570280a0ede38badc6e62288d0')
+                                file_hash='7fb1d81bd7d2c01a73b6a94d65cc46c712cc8c6eebae8e0653e4f7660d9a1eb3')
         test_model.load_weights(weights_path)
 
     return train_model, test_model

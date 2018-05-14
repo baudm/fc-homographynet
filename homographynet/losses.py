@@ -13,4 +13,4 @@ def mean_corner_error(y_true, y_pred):
 
 def image_consistency(y_true, y_pred):
     dssim = DSSIMObjective()
-    return 0.5 * mean_squared_error(y_true, y_pred) + dssim(y_true, y_pred)
+    return mean_squared_error(y_true, y_pred) + dssim(y_true, y_pred)
