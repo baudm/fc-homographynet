@@ -259,8 +259,7 @@ ained environments, such as in embedded applications.
  Thus, we propose a smaller, deeper, and fully convolutional network based
  on MobileNet.
  We leverage a self-supervised training method and a composite loss function.
- Based on test results on our COCO-derived dataset, our proposed model significa
-ntly outperforms the state-of-the-art.
+ The effectiveness of our proposed model is apparent in our results, wherein
 \end_layout
 
 \begin_layout Peer Review Title
@@ -2092,7 +2091,7 @@ reference "fig:Our-model-achieves"
 placement htbp
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -2142,7 +2141,7 @@ status open
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -2159,7 +2158,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-DeTone et al.
+baseline
 \end_layout
 
 \end_inset
@@ -2272,7 +2271,7 @@ reference "fig:ours"
 \begin_inset Float figure
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \align center
@@ -2425,7 +2424,7 @@ name "fig:warped-image-1-1"
 
 \end_inset
 
-warped image 1 (DeTone et al.)
+warped image 1 (baseline)
 \end_layout
 
 \end_inset
